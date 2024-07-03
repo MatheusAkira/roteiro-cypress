@@ -57,3 +57,61 @@ describe('template spec', () => {
       .should('have.length', 2);
   });
 });
+
+it('Marca todas as tarefas como completas', () => {
+  cy.visit('http://127.0.0.1:7001'); 
+
+  cy.get('.new-todo')
+    .type('Tarefa 1{enter}')
+    .type('Tarefa 2{enter}')
+    .type('Tarefa 3{enter}');
+
+  cy.get('.todo-list li .toggle')
+    .check({ multiple: true }); // Marca todas as checkboxes de uma vez
+
+  cy.contains('Completed').click();
+  cy.get('.todo-list li')
+    .should('have.length', 3); // Verifica se todas as tarefas estão visíveis na lista de completadas
+});
+
+it('Edita uma tarefa existente', () => {
+  cy.visit('http://127.0.0.1:7001'); 
+
+  cy.get('.new-todo')
+    .type('Tarefa a ser editada{enter}');
+
+  cy.contains('Tarefa a ser editada')
+    .dblclick(); // Dá um duplo clique na tarefa para editar
+
+  cy.get('.todo-list li .edit')
+    .type('{selectall}Tarefa editada{enter}'); // Seleciona todo o texto e digita a nova descrição
+
+  cy.get('.todo-list li')
+    .should('have.length', 1)
+    .first()
+    .should('have.text', 'Tarefa editada'); // Verifica se a tarefa foi editada corretamente
+});
+
+it('Marca e desmarca uma tarefa como completa', () => {
+  cy.visit('http://127.0.0.1:7001'); 
+
+  cy.get('.new-todo')
+    .type('Tarefa para marcar e desmarcar{enter}');
+
+  cy.get('.todo-list li .toggle')
+    .click(); // Marca a tarefa como completa
+
+  cy.contains('Active').click(); // Filtra por tarefas ativas
+  cy.get('.todo-list li')
+    .should('have.length', 0); // Verifica se a tarefa não está visível na lista de ativas
+
+  cy.contains('Completed').click(); // Filtra por tarefas completas
+  cy.get('.todo-list li')
+    .should('have.length', 1)
+    .first()
+    .should('have.text', 'Tarefa para marcar e desmarcar'); // Verifica se a tarefa está na lista de completas
+
+  cy.contains('Clear completed').click(); // Limpa as tarefas completas
+  cy.get('.todo-list li')
+    .should('have.length', 0); // Verifica se a lista de completas está vazia
+});
